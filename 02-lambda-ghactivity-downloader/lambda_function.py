@@ -1,10 +1,15 @@
-import json
+import json, os
 from download import download_file
+from upload import upload_s3, get_client
 
 def lambda_handler(event, context):
     # TODO implement
-    download_res = download_file("2023-01-30-0.json.gz")
-    return {
-        'statusCode': download_res.status_code,
-        'body': json.dumps('Hello from Lambda using gha downloader!')
-    }
+    file = "2023-01-30-0.json.gz"
+    download_res = download_file(file)
+    bucket = os.environ.get('BUCKET_NAME')
+    os.environ.setdefault('default', 'ntv-github')
+    upload_res = upload_s3(
+        body=download_res.content, 
+        bucket=bucket,
+        file_name=file)
+    return upload_res
